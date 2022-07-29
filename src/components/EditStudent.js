@@ -1,51 +1,82 @@
-import React  from 'react';
-import { useState } from 'react';
-import { useNavigate,useParams } from 'react-router-dom';
+import React,{useState, useEffect}  from 'react'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import {useNavigate,useParams} from 'react-router-dom';
+import {url} from '../App'
+import axios from 'axios';
 
-function EditStudent(props) {
-  let use = useParams(); 
-  
-  let [name,setName]=useState(props.editStudent.student[use.id].name);
-  let [email,setEmail]=useState(props.editStudent.student[use.id].email);
-  let [mobile,setMobile]=useState(props.editStudent.student[use.id].mobile);
-  let [batch,setBatch]=useState(props.editStudent.student[use.id].batch);
+function EditStudent() {
+  let params = useParams();
 
-  let navi = useNavigate();
+  let [name,setName] = useState("");
+  let [email,setEmail] = useState("");
+  let [mobile,setMobile] = useState("");
+  let [batch,setBatch] = useState("");
 
-  let handleSubmit = ()=>{
-    let data = {
-      name,
-      email,
-      mobile,
-      batch,
-    }
-    let students = [...props.editStudent.student];
-    students.splice(use.id,1,data)
-    props.editStudent.setStudent(students)
-    navi('/view-student');
+  useEffect(()=>{
+    getData()
+  },[])
+
+  let getData = async ()=>{
+    let res = await axios.get(`${url}/${params.id}`)
+    setName(res.data.name)
+    setEmail(res.data.email)
+    setMobile(res.data.mobile)
+    setBatch(res.data.batch)
+  }
+ 
+
+  let navigate = useNavigate();
+
+
+  let handleSubmit = async ()=>{
+      let data = {
+        name,
+        email,
+        mobile,
+        batch
+      }
+      let res = await axios.put(`${url}/${params.id}`,data)
+      //Just to jump to different route
+      if(res.status===200)
+        navigate('/view-student')
   }
 
+
+
   return <>
- <form className='position-absolute top-10 start-50'>
-  <div className="mb-3">
-    <label htmlFor="exampleInputEmail1" className="form-label">name</label>
-    <input type="text"  value={name} className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" onChange={(e)=>setName(e.target.value)}/>
-    <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Email</label>
-    <input type="text" value={email} className="form-control" id="exampleInputPassword1"onChange={(e)=>setEmail(e.target.value)}/>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Mobile Number</label>
-    <input type="text"  value={mobile} className="form-control" id="exampleInputPassword1"onChange={(e)=>setMobile(e.target.value)}/>
-  </div>
-  <div className="mb-3">
-    <label htmlFor="exampleInputPassword1" className="form-label">Batch</label>
-    <input type="text" value={batch} className="form-control" id="exampleInputPassword1"onChange={(e)=>setBatch(e.target.value)}/>
-  </div>
-  <button type="button" className="btn btn-primary" onClick={()=>handleSubmit()}>Submit</button>
-</form>
+    <div>
+    <Form>
+        <Form.Group className="mb-3" >
+          <Form.Label>Name</Form.Label>
+          <Form.Control type="text" value={name} placeholder="Enter Name" onChange={(e)=>setName(e.target.value)}/>
+        </Form.Group>
+
+      <Form.Group className="mb-3" >
+        <Form.Label>Email</Form.Label>
+        <Form.Control type="email" value={email} placeholder="Enter email" onChange={(e)=>setEmail(e.target.value)}/>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Mobile</Form.Label>
+        <Form.Control type="text" value={mobile} placeholder="Mobile" onChange={(e)=>{
+          setMobile(e.target.value)
+        }}/>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Batch </Form.Label>
+        <Form.Control type="text" value={batch} placeholder="Batch" onChange={(e)=>setBatch(e.target.value)}/>
+      </Form.Group>
+      
+      <Button variant="primary" onClick={()=>handleSubmit()}>
+        Submit
+      </Button>
+</Form>
+    </div>
   </>
 }
+
+
+
 export default EditStudent
